@@ -87,7 +87,7 @@ class RealClient(RequestsClient):
        pass
    
     @get("prices")
-    def dataSwap(self,
+    def getSwap(self,
                   destToken: str, 
                   srcToken: str,
                   amount: int = 1000, 
@@ -97,6 +97,9 @@ class RealClient(RequestsClient):
         pass
 
 
-client = RealClient()
-quote = client.dataSwap('0xdac17f958d2ee523a2206206994597c13d831ec7', '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
-pprint(quote)
+if __name__ == "__main__":
+    client = RealClient()
+    input_mint  = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+    output_mint = "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"
+    amount = 500
+    quote = client.getSwap(input_mint, output_mint. amount)

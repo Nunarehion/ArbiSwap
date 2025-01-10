@@ -5,6 +5,7 @@ from dataclass_rest import get
 from dataclass_rest.http.requests import RequestsClient
 from pprint import pprint
 
+
 @dataclass
 class SwapInfo:
     ammKey: str
@@ -16,10 +17,12 @@ class SwapInfo:
     feeAmount: str
     feeMint: str
 
+
 @dataclass
 class RoutePlan:
     swapInfo: SwapInfo
     percent: float
+
 
 @dataclass
 class QuoteResponse:
@@ -44,15 +47,17 @@ class RealClient(RequestsClient):
 
     @get("quote")
     def __get_quote(self, inputMint: str, outputMint: str, amount: int) -> QuoteResponse:
-       pass
-       
-    def get_quote(self, inputMint: str, outputMint: str, amount: int):
-       return self.__get_quote(inputMint, outputMint, amount).routePlan
+        pass
+
+    def getSwap(self, inputMint: str, outputMint: str, amount: int):
+        return self.__get_quote(inputMint, outputMint, amount).routePlan
+
 
 if __name__ == "__main__":
     client = RealClient()
     input_mint = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
     output_mint = "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"
     amount = 50
-    quote = client.get_quote(inputMint=input_mint, outputMint=output_mint, amount=amount)
+    quote = client.getSwap(inputMint=input_mint,
+                           outputMint=output_mint, amount=amount)
     pprint(quote)
