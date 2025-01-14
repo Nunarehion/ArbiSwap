@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List, Union
+from typing import (Optional, List, Union, Protocol)
 from requests import Session
 from dataclass_rest import get
 from dataclass_rest.http.requests import RequestsClient
@@ -41,7 +41,7 @@ class QuoteResponse:
     timeTaken: float
 
 
-class RealClient(RequestsClient):
+class RealClientDAOimpl(RequestsClient):
     def __init__(self):
         super().__init__("https://quote-api.jup.ag/v6", Session())
 
