@@ -30,14 +30,14 @@ class Service:
                      Coin(
                          symbol='USDC',
                          exchanges={
-                             'Paraswap': Exchange(name='Paraswap', token='0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'),
-                             'Jupiter': Exchange(name='Jupiter', token='EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
+                             'Paraswap': Exchange(name='Paraswap', token='0x55cD6469F597452B5A7536e2CD98fDE4c1247ee4'),
+                             'Jupiter': Exchange(name='Jupiter', token='9se6kma7LeGcQWyRBNcYzyxZPE3r9t9qWZ8SnjnN3jJ7')
                          }),
                      Coin(
                          symbol='LUNA',
                          exchanges={
-                             'Paraswap': Exchange(name='Paraswap', token='0x55cD6469F597452B5A7536e2CD98fDE4c1247ee4'),
-                             'Jupiter': Exchange(name='Jupiter', token='Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB')
+                             'Paraswap': Exchange(name='Paraswap', token='0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'),
+                             'Jupiter': Exchange(name='Jupiter', token='EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
                          }),
 
                  ],

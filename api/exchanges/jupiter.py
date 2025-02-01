@@ -17,7 +17,9 @@ class RealClient:
             'amount': amount
         }
         response = self.session.get(url, params=params)
+
         response.raise_for_status()
+        print(1)
         print(response.url)
         return response.json()
 

@@ -3,10 +3,10 @@ from pprint import pprint
 testing_modules = [
     # <--тестирование API биржи-->#
     # 'parasvap.client',
-    # 'jupiter.clent',
+    # 'jupiter.clent'
 
     # <--тестирование сервиса-->#
-    'service',
+    'service'
 ]
 tokens = {
     "luna (base)": "0x55cD6469F597452B5A7536e2CD98fDE4c1247ee4",
