@@ -24,19 +24,19 @@ class Coin:
 #      }),
 
 
-class Client:
+class Service:
     def __init__(self,
                  tokens=[
                      Coin(
-                         symbol='WBTC',
+                         symbol='USDC',
                          exchanges={
-                             'Paraswap': Exchange(name='Paraswap', token='0x2260fac5e5542a773aa44fbcfedf7c193bc2c599'),
-                             'Jupiter': Exchange(name='Jupiter', token='3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh')
+                             'Paraswap': Exchange(name='Paraswap', token='0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'),
+                             'Jupiter': Exchange(name='Jupiter', token='EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
                          }),
                      Coin(
-                         symbol='USDT',
+                         symbol='LUNA',
                          exchanges={
-                             'Paraswap': Exchange(name='Paraswap', token='0xdac17f958d2ee523a2206206994597c13d831ec7'),
+                             'Paraswap': Exchange(name='Paraswap', token='0x55cD6469F597452B5A7536e2CD98fDE4c1247ee4'),
                              'Jupiter': Exchange(name='Jupiter', token='Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB')
                          }),
 
@@ -69,6 +69,3 @@ class Client:
 
     def calc_spred():
         pass
-
-
-Client().calc_amountCompare()

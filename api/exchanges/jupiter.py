@@ -18,8 +18,9 @@ class RealClient:
         }
         response = self.session.get(url, params=params)
         response.raise_for_status()
+        print(response.url)
         return response.json()
 
-    def getSwap(self, inputMint: str, outputMint: str, amount: int):
-        swap_data = self.__get_quote(inputMint, outputMint, amount)
-        return swap_data.get('routePlan', {})
+    def getSwap(self, *args, **kwargs):
+        swap_data = self.getSwapData(*args, **kwargs)
+        return {"amount": swap_data["outAmount"], "gas": swap_data["priceImpactPct"], "destUSD": swap_data["inAmount"]}

@@ -16,31 +16,34 @@ class RealClient:
         response.raise_for_status()
         return response.json()
 
-    def getSwapData(self, destToken: str, srcToken: str, amount: int, srcDecimals: int = 10**6, destDecimals: int = 10**6, side: Literal["BUY", "SELL"] = "BUY", network: Union[int, str] = 1, slippage: Union[int, str] = 0.5):
+    def getSwapData(self, srcToken: str, destToken: str, amount: int, srcDecimals: int = 6, destDecimals: int = 18, side: Literal["BUY", "SELL"] = "BUY", network: Union[int, str] = 8453, slippage: Union[int, str] = 0.5):
         url = f"{self.base_url}prices"
 
         params = {
-            'destToken': destToken,
+
             'srcToken': srcToken,
-            'amount': str(amount * srcDecimals),
+            'srcDecimals': str(srcDecimals),
+            'destToken': destToken,
+            'destDecimals': str(destDecimals),
+            'amount': str(amount * 10**srcDecimals),
             'network': str(network),
-            'slippage': str(slippage),
-            'side': side,
         }
         response = self.session.get(url, params=params)
         response.raise_for_status()
+        print(response.url)
         return response.json()
 
-    def getSwap(self, *args):
+    def getSwap(self, *args, **kwargs):
         swapData = self.getSwapData(
-            *args)['priceRoute']
+            *args, **kwargs)['priceRoute']
         srcUSD = float(swapData['srcUSD'])
         destUSD = float(swapData['destUSD'])
         difference = srcUSD - destUSD
-
+        destDecimals = swapData['destDecimals']
+        amount = float(swapData['destAmount']) / 10**destDecimals
         swapData = swapData['bestRoute'][0]['swaps'][0]
-        decimals = swapData['srcDecimals']
+
         swapData = swapData['swapExchanges'][0]
         gas = float(swapData['data']['gasUSD'])
-        amount = float(swapData['srcAmount']) / 10**decimals
-        return {"amount": amount, "gas": difference}
+
+        return {"amount": amount, "gas": difference, "destUSD": destUSD}
