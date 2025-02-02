@@ -13,6 +13,11 @@ logging.basicConfig(level=logging.INFO)
 load_dotenv()
 API_TOKEN = os.getenv('API_TOKEN')
 
+if not API_TOKEN:
+    logging.error("API_TOKEN is not set. Please check your .env file.")
+else:
+    logging.info(f"API_TOKEN is set {API_TOKEN}")
+
 
 async def main():
     logging.basicConfig(
@@ -23,7 +28,6 @@ async def main():
     dp = Dispatcher(storage=MemoryStorage())
     dp.include_routers(common.router)
     await dp.start_polling(bot)
-    
 
 
 if __name__ == "__main__":

@@ -16,21 +16,22 @@ class RealClient:
         response.raise_for_status()
         return response.json()
 
-    def getSwapData(self, srcToken: str, destToken: str, amount: int, srcDecimals: int = 6, destDecimals: int = 18, side: Literal["BUY", "SELL"] = "BUY", network: Union[int, str] = 8453, slippage: Union[int, str] = 0.5):
+    def getSwapData(self, srcToken: str, destToken: str, amount: float, srcDecimals: int = 6, destDecimals: int = 18, side: Literal["BUY", "SELL"] = "SELL", network: Union[int, str] = 8453, slippage: Union[int, str] = 0.5):
         url = f"{self.base_url}prices"
-
         params = {
-
             'srcToken': srcToken,
             'srcDecimals': str(srcDecimals),
             'destToken': destToken,
             'destDecimals': str(destDecimals),
-            'amount': str(amount * 10**srcDecimals),
+            'amount': str(float(amount) * (10**srcDecimals if side == "SELL" else 10**destDecimals)),
             'network': str(network),
+            'side': str(side)
         }
+
         response = self.session.get(url, params=params)
-        response.raise_for_status()
+        # response.raise_for_status()
         print(response.url)
+
         return response.json()
 
     def getSwap(self, *args, **kwargs):

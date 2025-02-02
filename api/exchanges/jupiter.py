@@ -17,12 +17,11 @@ class RealClient:
             'amount': amount
         }
         response = self.session.get(url, params=params)
-
-        response.raise_for_status()
-        print(1)
         print(response.url)
-        return response.json()
+        response.raise_for_status()
+        data = response.json()
+        return data
 
     def getSwap(self, *args, **kwargs):
         swap_data = self.getSwapData(*args, **kwargs)
-        return {"amount": swap_data["outAmount"], "gas": swap_data["priceImpactPct"], "destUSD": swap_data["inAmount"]}
+        return {"amount": f"{float(swap_data['outAmount']) / 100:.2f}", "gas": swap_data["priceImpactPct"], "destUSD": swap_data["inAmount"]}
