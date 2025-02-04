@@ -24,4 +24,4 @@ class RealClient:
 
     def getSwap(self, *args, **kwargs):
         swap_data = self.getSwapData(*args, **kwargs)
-        return {"amount": f"{float(swap_data['outAmount']) / 100:.2f}", "gas": swap_data["priceImpactPct"], "destUSD": swap_data["inAmount"]}
+        return {"amount": f"{float(swap_data['otherAmountThreshold']) / 100:.2f}", "gas": swap_data["priceImpactPct"], "destUSD": swap_data["inAmount"]}

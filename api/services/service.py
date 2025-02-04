@@ -28,8 +28,11 @@ class Coin:
 class ClinentResult:
     coins: list[Coin]
     amount: float
-    paraswap_amount: float
-    jupiter_amount: float
+    jupiter_LUNA: float
+    paraswap_USDC: float
+    paraswap_LUNA: float
+    jupiter_USDC: float
+    difference: float
     spred: float
 
 
@@ -58,26 +61,48 @@ class Service:
         self.paraswapClient = paraswap.RealClient()
 
     def calc_amountCompare(self):
-        jupiter_amount = self.jupiterClient.getSwap(
+        # luna
+        jupiter_LUNA = self.jupiterClient.getSwap(
             self.input_mint.exchanges["jupiter"].token,
             self.output_mint.exchanges["jupiter"].token,
             self.amount)["amount"]
-
-        paraswap_amount = self.paraswapClient.getSwap(
+        # usdC
+        paraswap_USDC = self.paraswapClient.getSwap(
             self.output_mint.exchanges["paraswap"].token,
             self.input_mint.exchanges["paraswap"].token,
-            jupiter_amount,
+            jupiter_LUNA,
             srcDecimals=18,
             destDecimals=6
         )["amount"]
+        # luna
+        paraswap_LUNA = self.paraswapClient.getSwap(
+            self.input_mint.exchanges["paraswap"].token,
+            self.output_mint.exchanges["paraswap"].token,
+            self.amount,
+        )["amount"]
+
+        # usdC
+        jupiter_USDC = self.jupiterClient.getSwap(
+            self.output_mint.exchanges["jupiter"].token,
+            self.input_mint.exchanges["jupiter"].token,
+            int(paraswap_LUNA)*100
+        )["amount"]
+        jupiter_USDC = float(jupiter_USDC)*100
 
         return ClinentResult(
             coins=[self.output_mint, self.input_mint],
             amount=self.amount,
-            jupiter_amount=jupiter_amount,
-            paraswap_amount=paraswap_amount,
-            spred=self.calc_spred(self.amount, paraswap_amount)
+            jupiter_LUNA=jupiter_LUNA,
+            paraswap_USDC=paraswap_USDC,
+            paraswap_LUNA=paraswap_LUNA,
+            jupiter_USDC=jupiter_USDC,
+            difference=self.calc_difference(
+                paraswap_USDC, jupiter_USDC),
+            spred=self.calc_spred(paraswap_USDC, jupiter_USDC)
         )
+
+    def calc_difference(self, price_bye, price_buy):
+        return price_bye - price_buy
 
     def calc_spred(self, price_bye: float, price_buy: float):
         return price_bye/price_buy
