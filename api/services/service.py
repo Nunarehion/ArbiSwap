@@ -66,7 +66,6 @@ class Service:
             self.output_mint.exchanges["jupiter"].token,
             self.amount
         )
-        # Теперь вы можете индексировать результат
         jupiter_LUNA = jupiter_LUNA_response["amount"]
 
         # usdC

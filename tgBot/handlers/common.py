@@ -27,9 +27,8 @@ async def cmd_start(message: Message):
 
 
 async def get_data(message: Message, check_spred: bool = False):
-    data = Service().calc_amountCompare()
-    print(float(abs(data.paraswap_USDC-data.amount)/data.amount*100))
-    if float(abs(data.paraswap_USDC-data.amount)/data.amount*100) > 1.5 or check_spred:
+    data = await Service().calc_amount_compare()
+    if float(data.spread_paraswap) > 1.5 or check_spred:
         print(
             f"{abs(data.paraswap_USDC-data.amount):.2f}$ ({abs(data.paraswap_USDC-data.amount)/data.amount*100:.2f}%) {data.amount}$"
             "\n"
