@@ -1,9 +1,10 @@
+import asyncio
 from pprint import pprint
 
 testing_modules = [
     # <--тестирование API биржи-->#
     # 'paraswap.client',
-    # 'jupiter.clent'
+    # 'jupiter.clent',
 
     # <--тестирование сервиса-->#
     'service'
@@ -24,8 +25,12 @@ tokens = {
     "goat (jupiter)": "CzLSujWBLFsSjncfkh59rUFqvafWcY5tzedWJSuypump"
 }
 
-if 'paraswap.client' in testing_modules:
-    from api.exchanges.paraswap import RealClient
+
+async def run_paraswap_tests():
+    from api.exchanges.paraswap import AsyncClient
+    print("paraswap.client")
+
+    client = AsyncClient()
     testes = {
         'usdc => luna': {
             'srcToken': tokens['usdc (base)'],
@@ -71,16 +76,16 @@ if 'paraswap.client' in testing_modules:
 
     for key in testes:
         print(f"[[ {key} ]]")
-        client = RealClient()
-        # quote = client.getSwapData(**testes[key])
-        price = client.getSwap(**testes[key])
-        # pprint(quote)
+        price = await client.get_swap(**testes[key])
         pprint(price)
-        print("____________________________________"+"\n")
+        print("____________________________________" + "\n")
 
 
-if 'jupiter.clent' in testing_modules:
-    from api.exchanges.jupiter import RealClient
+async def run_jupiter_tests():
+    from api.exchanges.jupiter import AsyncClient
+    print('jupiter.client')
+
+    client = AsyncClient()
     testes = {
         '(jupiter) usdc => luna': {
             'inputMint': tokens['usdc (jupiter)'],
@@ -96,13 +101,30 @@ if 'jupiter.clent' in testing_modules:
 
     for key in testes:
         print(f"[[ {key} ]]")
-        client = RealClient()
-        # quote = client.getSwapData(**testes[key])
-        price = client.getSwap(**testes[key])
-        # pprint(quotse)
+        price = await client.get_swap(**testes[key])
         pprint(price)
+        print("____________________________________" + "\n")
 
 
-if 'service' in testing_modules:
+async def run_service_tests():
     from api.services.service import Service
-    pprint(Service().calc_amountCompare())
+    print('test service')
+
+    service = Service()
+    result = await service.calc_amount_compare()
+    pprint(result)
+
+
+async def main():
+    if 'paraswap.client' in testing_modules:
+        await run_paraswap_tests()
+
+    if 'jupiter.client' in testing_modules:
+        await run_jupiter_tests()
+
+    if 'service' in testing_modules:
+        await run_service_tests()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

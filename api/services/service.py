@@ -2,7 +2,6 @@ import os
 from api.exchanges import jupiter, paraswap
 from dataclasses import dataclass
 from typing import Dict
-from pprint import pprint
 
 
 @dataclass
@@ -25,7 +24,7 @@ class Coin:
 
 
 @dataclass
-class ClinentResult:
+class ClientResult:
     coins: list[Coin]
     amount: float
     jupiter_LUNA: float
@@ -33,7 +32,8 @@ class ClinentResult:
     paraswap_LUNA: float
     jupiter_USDC: float
     difference: float
-    spred: float
+    spread_jupiter: float
+    spread_paraswap: float
 
 
 class Service:
@@ -51,58 +51,64 @@ class Service:
                              'paraswap': Exchange(name='Paraswap', token='0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'),
                              'jupiter': Exchange(name='Jupiter', token='EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
                          }),
-
                  ],
                  amount=500, mode="SELL"):
         self.input_mint = tokens[1]
         self.amount = amount
         self.output_mint = tokens[0]
-        self.jupiterClient = jupiter.RealClient()
-        self.paraswapClient = paraswap.RealClient()
+        self.jupiterClient = jupiter.AsyncClient()
+        self.paraswapClient = paraswap.AsyncClient()
 
-    def calc_amountCompare(self):
+    async def calc_amount_compare(self):
         # luna
-        jupiter_LUNA = self.jupiterClient.getSwap(
+        jupiter_LUNA_response = await self.jupiterClient.get_swap(
             self.input_mint.exchanges["jupiter"].token,
             self.output_mint.exchanges["jupiter"].token,
-            self.amount)["amount"]
+            self.amount
+        )
+        # Теперь вы можете индексировать результат
+        jupiter_LUNA = jupiter_LUNA_response["amount"]
+
         # usdC
-        paraswap_USDC = self.paraswapClient.getSwap(
+        paraswap_USDC_response = await self.paraswapClient.get_swap(
             self.output_mint.exchanges["paraswap"].token,
             self.input_mint.exchanges["paraswap"].token,
             jupiter_LUNA,
             srcDecimals=18,
             destDecimals=6
-        )["amount"]
+        )
+        paraswap_USDC = paraswap_USDC_response["amount"]
+
         # luna
-        paraswap_LUNA = self.paraswapClient.getSwap(
+        paraswap_LUNA_response = await self.paraswapClient.get_swap(
             self.input_mint.exchanges["paraswap"].token,
             self.output_mint.exchanges["paraswap"].token,
             self.amount,
-        )["amount"]
+        )
+        paraswap_LUNA = paraswap_LUNA_response["amount"]
 
         # usdC
-        jupiter_USDC = self.jupiterClient.getSwap(
+        jupiter_USDC_response = await self.jupiterClient.get_swap(
             self.output_mint.exchanges["jupiter"].token,
             self.input_mint.exchanges["jupiter"].token,
-            int(paraswap_LUNA)*100
-        )["amount"]
-        jupiter_USDC = float(jupiter_USDC)*100
+            int(paraswap_LUNA) * 100
+        )
+        jupiter_USDC = float(jupiter_USDC_response["amount"]) * 100
 
-        return ClinentResult(
+        return ClientResult(
             coins=[self.output_mint, self.input_mint],
             amount=self.amount,
             jupiter_LUNA=jupiter_LUNA,
             paraswap_USDC=paraswap_USDC,
             paraswap_LUNA=paraswap_LUNA,
             jupiter_USDC=jupiter_USDC,
-            difference=self.calc_difference(
-                paraswap_USDC, jupiter_USDC),
-            spred=self.calc_spred(paraswap_USDC, jupiter_USDC)
+            difference=self.calc_difference(paraswap_USDC, jupiter_USDC),
+            spread_jupiter=self.calc_spread(self.amount, jupiter_USDC),
+            spread_paraswap=self.calc_spread(self.amount, paraswap_USDC),
         )
 
-    def calc_difference(self, price_bye, price_buy):
-        return price_bye - price_buy
+    def calc_difference(self, price_bye, price_sell):
+        return price_bye - price_sell
 
-    def calc_spred(self, price_bye: float, price_buy: float):
-        return price_bye/price_buy
+    def calc_spread(self, price_bye: float, price_sell: float):
+        return abs(price_bye - price_sell) / price_bye * 100
