@@ -4,9 +4,9 @@ from pprint import pprint
 testing_modules = [
     # <--тестирование API биржи-->#
     # 'paraswap.client',
-    # 'jupiter.clent',
+    'jupiter.client',
 
-    # <--тестирование сервиса-->#
+    # # <--тестирование сервиса-->#
     'service'
 ]
 tokens = {
@@ -92,11 +92,11 @@ async def run_jupiter_tests():
             'outputMint': tokens['luna (jupiter)'],
             "amount": 500,
         },
-        # '(jupiter) usdc => goat': {
-        #     'inputMint': tokens['usdc (jupiter)'],
-        #     'outputMint': tokens['goat (jupiter)'],
-        #     "amount": 500,
-        # },
+        '(jupiter) usdc => goat': {
+            'inputMint': tokens['usdc (jupiter)'],
+            'outputMint': tokens['goat (jupiter)'],
+            "amount": 500,
+        },
     }
 
     for key in testes:
