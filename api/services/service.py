@@ -1,7 +1,12 @@
+import asyncio
+import logging as log
 import os
 from api.exchanges import jupiter, paraswap
 from dataclasses import dataclass
 from typing import Dict
+
+log.basicConfig(
+    format='[%(asctime)s - %(levelname)-8s] %(message)s', level=log.INFO)
 
 
 @dataclass
@@ -30,10 +35,21 @@ class ClientResult:
     jupiter_LUNA: float
     paraswap_USDC: float
     paraswap_LUNA: float
+    paraswap_difference: float
     jupiter_USDC: float
-    difference: float
+    jupiter_difference: float
     spread_jupiter: float
     spread_paraswap: float
+
+
+@dataclass
+class ClientResult:
+    coins: list[Coin]
+    amount: float
+    usdc: float
+    luna: float
+    difference: float
+    spread: float
 
 
 class Service:
@@ -59,52 +75,89 @@ class Service:
         self.jupiterClient = jupiter.AsyncClient()
         self.paraswapClient = paraswap.AsyncClient()
 
-    async def calc_amount_compare(self):
-        # luna
-        jupiter_LUNA_response = await self.jupiterClient.get_swap(
+    async def fetch_jupiter_data(self, input_token, output_token, amount, **kwargs):
+        try:
+            return await self.jupiterClient.get_swap_data(input_token, output_token, amount, **kwargs)
+        except Exception as e:
+            log.error(f"Error fetching data from Jupiter: {e}")
+            return None
+
+    async def fetch_paraswap_data(self, input_token, output_token, amount, **kwargs):
+        try:
+            return await self.paraswapClient.get_swap(input_token, output_token, amount, **kwargs)
+        except Exception as e:
+            log.error(f"Error fetching data from Paraswap: {e}")
+            return None
+
+    async def calc_jupiter_amount(self):
+        # Получаем данные о свопе из Jupiter
+        log.debug("[ GET AMOUNT FROM JUPITER]")
+        jupiter_response = await self.fetch_jupiter_data(
             self.input_mint.exchanges["jupiter"].token,
             self.output_mint.exchanges["jupiter"].token,
             self.amount
         )
-        jupiter_LUNA = jupiter_LUNA_response["amount"]
+        if jupiter_response is None:
+            return None
 
-        # usdC
-        paraswap_USDC_response = await self.paraswapClient.get_swap(
+        luna = float(jupiter_response["otherAmountThreshold"]) / 100
+
+        # Получаем данные о свопе из Paraswap
+        paraswap_response = await self.fetch_paraswap_data(
             self.output_mint.exchanges["paraswap"].token,
             self.input_mint.exchanges["paraswap"].token,
-            jupiter_LUNA,
-            srcDecimals=18,
-            destDecimals=6
+            luna,
+            srcDecimals=18
         )
-        paraswap_USDC = paraswap_USDC_response["amount"]
+        if paraswap_response is None:
+            return None
 
-        # luna
-        paraswap_LUNA_response = await self.paraswapClient.get_swap(
-            self.input_mint.exchanges["paraswap"].token,
-            self.output_mint.exchanges["paraswap"].token,
-            self.amount,
-        )
-        paraswap_LUNA = paraswap_LUNA_response["amount"]
-
-        # usdC
-        jupiter_USDC_response = await self.jupiterClient.get_swap(
-            self.output_mint.exchanges["jupiter"].token,
-            self.input_mint.exchanges["jupiter"].token,
-            int(paraswap_LUNA) * 100
-        )
-        jupiter_USDC = float(jupiter_USDC_response["amount"]) * 100
-
+        usdc = paraswap_response["amount"]
         return ClientResult(
             coins=[self.output_mint, self.input_mint],
-            amount=self.amount,
-            jupiter_LUNA=jupiter_LUNA,
-            paraswap_USDC=paraswap_USDC,
-            paraswap_LUNA=paraswap_LUNA,
-            jupiter_USDC=jupiter_USDC,
-            difference=self.calc_difference(paraswap_USDC, jupiter_USDC),
-            spread_jupiter=self.calc_spread(self.amount, jupiter_USDC),
-            spread_paraswap=self.calc_spread(self.amount, paraswap_USDC),
+            amount=500,
+            usdc=usdc,
+            luna=luna,
+            difference=self.amount - usdc,
+            spread=self.calc_spread(self.amount, usdc)
         )
+
+    async def calc_paraswap_amount(self):
+        log.debug("[ GET AMOUNT FROM PARASWAP]")
+
+        try:
+            # Получаем данные о свопе из Paraswap
+            paraswap_response = await self.fetch_paraswap_data(
+                self.input_mint.exchanges["paraswap"].token,
+                self.output_mint.exchanges["paraswap"].token,
+                self.amount
+            )
+            if paraswap_response is None:
+                return None
+
+            luna = paraswap_response["amount"]
+
+            # Получаем данные о свопе из Jupiter
+            jupiter_response = await self.fetch_jupiter_data(
+                self.output_mint.exchanges["jupiter"].token,
+                self.input_mint.exchanges["jupiter"].token,
+                int(luna) * 100
+            )
+            if jupiter_response is None:
+                return None
+
+            usdc = float(jupiter_response["otherAmountThreshold"])
+            return ClientResult(
+                coins=[self.output_mint, self.input_mint],
+                amount=500,
+                usdc=usdc,
+                luna=luna,
+                difference=self.amount - usdc,
+                spread=self.calc_spread(self.amount, usdc)
+            )
+        except Exception as e:
+            log.error(f"Error in calc_paraswap_amount: {e}")
+            return None
 
     def calc_difference(self, price_bye, price_sell):
         return price_bye - price_sell

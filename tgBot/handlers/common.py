@@ -2,7 +2,7 @@
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.types import Message
-
+import logging as log
 import asyncio
 
 from api.services.service import Service
@@ -26,39 +26,54 @@ async def cmd_start(message: Message):
     await get_data(message, True)
 
 
-async def get_data(message: Message, check_spred: bool = False):
-    data = await Service().calc_amount_compare()
-    if float(data.spread_paraswap) > 1.5 or check_spred:
-        print(
-            f"{abs(data.paraswap_USDC-data.amount):.2f}$ ({abs(data.paraswap_USDC-data.amount)/data.amount*100:.2f}%) {data.amount}$"
+async def process_paraswap_data(message: Message, check_spred: bool):
+    print("________________________process_paraswap_data____________________________")
+    data = await Service().calc_paraswap_amount()
+    spread = float(data.spread)
+    log.info(data)
+    if spread > 1.5 or check_spred:
+        msg = (
+            f"<b>{abs(data.difference):.2f}$</b>"
+            f" (<i>{spread:.2f}%</i>)"
+            f" <b>{data.amount}</b>$"
             "\n"
             f"#LUNA SOL → BASE"
         )
-        await message.answer(
-            text=(
-                f"{abs(data.paraswap_USDC-data.amount):.2f}$ ({abs(data.paraswap_USDC-data.amount)/data.amount*100:.2f}%) {data.amount}$"
-                "\n"
-                f"#LUNA SOL → BASE"
-            ),
+
+        log.info(msg)
+        await message.answer(text=msg, parse_mode='HTML')
+    print("____________________________________________________")
+
+
+async def process_jupiter_data(message: Message, check_spred: bool):
+    print("_______________________process_jupiter_data_____________________________")
+    data = await Service().calc_jupiter_amount()
+    spread = float(data.spread)
+    log.info(data)
+    if spread > 1.5 or check_spred:
+        msg = (
+            f"<b>{abs(data.difference):.2f}$</b>"
+            f" (<i>{spread:.2f}%</i>)"
+            f" <b>{data.amount}</b>$"
+            "\n"
+            f"#LUNA BASE → SOL"
         )
-    print(float(abs(data.jupiter_USDC-data.amount)/data.amount*100))
-    if float(abs(data.jupiter_USDC-data.amount)/data.amount*100) > 1.5 or check_spred:
-        print(f"{abs(data.jupiter_USDC-data.amount):.2f}$ ({abs(data.jupiter_USDC-data.amount)/data.amount*100:.2f}%) {data.amount}$"
-              "\n"
-              f"#LUNA BASE → SOL")
-        await message.answer(
-            text=(
-                f"{abs(data.jupiter_USDC-data.amount):.2f}$ ({abs(data.jupiter_USDC-data.amount)/data.amount*100:.2f}%) {data.amount}$"
-                "\n"
-                f"#LUNA BASE → SOL"
-            ),
-        )
+        log.info(msg)
+        await message.answer(text=msg, parse_mode='HTML')
+    print("____________________________________________________")
+
+
+async def get_data(message: Message, check_spred: bool = False):
+    await asyncio.gather(
+        process_paraswap_data(message, check_spred),
+        process_jupiter_data(message, check_spred)
+    )
 
 
 async def send_updates(message: Message):
     while True:
         await get_data(message)
-        await asyncio.sleep(10)
+        await asyncio.sleep(5)
 
 
 @router.message(Command(commands=["push"]))

@@ -2,6 +2,7 @@ import aiohttp
 import asyncio
 from dataclasses import dataclass
 from typing import Optional, List, Union, Protocol
+import logging as log
 
 
 class AsyncClient:
@@ -17,7 +18,7 @@ class AsyncClient:
         }
         async with aiohttp.ClientSession() as session:
             async with session.get(url, params=params) as response:
-                print(response.url)
+                log.info(response.url)
                 response.raise_for_status()
                 data = await response.json()
                 return data

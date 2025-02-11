@@ -4,7 +4,7 @@ from pprint import pprint
 testing_modules = [
     # <--тестирование API биржи-->#
     # 'paraswap.client',
-    'jupiter.client',
+    # 'jupiter.client',
 
     # # <--тестирование сервиса-->#
     'service'
@@ -111,8 +111,10 @@ async def run_service_tests():
     print('test service')
 
     service = Service()
-    result = await service.calc_amount_compare()
-    pprint(result)
+    result_jp = await service.calc_jupiter_amount()
+    result_pr = await service.calc_paraswap_amount()
+    pprint(result_jp)
+    pprint(result_pr)
 
 
 async def main():
