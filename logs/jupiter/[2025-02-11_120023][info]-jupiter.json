@@ -1,0 +1,9 @@
+{
+  "file": "jupiter.py",
+  "level": "INFO",
+  "time": "2025-02-11 12:00:23",
+  "name": "my_logger",
+  "message": {
+    "message": "https://quote-api.jup.ag/v6/quote?inputMint=9se6kma7LeGcQWyRBNcYzyxZPE3r9t9qWZ8SnjnN3jJ7&outputMint=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&amount=2284500"
+  }
+}

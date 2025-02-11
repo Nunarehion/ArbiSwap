@@ -1,5 +1,6 @@
 import asyncio
 from pprint import pprint
+from logger import logger as log
 
 testing_modules = [
     # <--тестирование API биржи-->#

@@ -1,0 +1,8 @@
+{
+    "file": "common.py",
+    "level": "INFO",
+    "time": "2025-02-11 11:56:16",
+    "name": "my_logger",
+    "message": {
+        "message": "<b>7.00$</b> (<i>1.40%</i>) <b>500</b>$\n#LUNA SOL \u2192 BASE",
+        "data": 

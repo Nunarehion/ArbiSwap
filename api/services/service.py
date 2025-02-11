@@ -1,12 +1,8 @@
-import asyncio
 import logging as log
-import os
 from api.exchanges import jupiter, paraswap
 from dataclasses import dataclass
 from typing import Dict
-
-log.basicConfig(
-    format='[%(asctime)s - %(levelname)-8s] %(message)s', level=log.INFO)
+from logger import logger as log
 
 
 @dataclass
@@ -44,6 +40,7 @@ class ClientResult:
 
 @dataclass
 class ClientResult:
+    logs: dict
     coins: list[Coin]
     amount: float
     usdc: float
@@ -91,7 +88,7 @@ class Service:
 
     async def calc_jupiter_amount(self):
         # Получаем данные о свопе из Jupiter
-        log.debug("[ GET AMOUNT FROM JUPITER]")
+        log.debug("[GET AMOUNT FROM JUPITER]")
         jupiter_response = await self.fetch_jupiter_data(
             self.input_mint.exchanges["jupiter"].token,
             self.output_mint.exchanges["jupiter"].token,
@@ -113,7 +110,13 @@ class Service:
             return None
 
         usdc = paraswap_response["amount"]
+        logs = {}
+        logs["message"] = "[GET AMOUNT FROM JUPITER]"
+        logs["GET AMOUNT FROM JUPITER"] = {}
+        logs["paraswap_response"] = paraswap_response
+        logs["jupiter_response"] = jupiter_response
         return ClientResult(
+            logs=logs,
             coins=[self.output_mint, self.input_mint],
             amount=500,
             usdc=usdc,
@@ -123,7 +126,6 @@ class Service:
         )
 
     async def calc_paraswap_amount(self):
-        log.debug("[ GET AMOUNT FROM PARASWAP]")
 
         try:
             # Получаем данные о свопе из Paraswap
@@ -147,7 +149,14 @@ class Service:
                 return None
 
             usdc = float(jupiter_response["otherAmountThreshold"])
+            logs = {}
+            logs["message"] = "[GET AMOUNT FROM PARASWAP]"
+            logs["GET AMOUNT FROM PARASWAP"] = {}
+            logs["paraswap_response"] = paraswap_response
+            logs["jupiter_response"] = jupiter_response
+
             return ClientResult(
+                logs=logs,
                 coins=[self.output_mint, self.input_mint],
                 amount=500,
                 usdc=usdc,

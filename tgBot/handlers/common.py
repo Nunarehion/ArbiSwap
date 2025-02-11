@@ -2,8 +2,8 @@
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.types import Message
-import logging as log
 import asyncio
+from logger import logger as log
 
 from api.services.service import Service
 router = Router()
@@ -30,7 +30,6 @@ async def process_paraswap_data(message: Message, check_spred: bool):
     print("________________________process_paraswap_data____________________________")
     data = await Service().calc_paraswap_amount()
     spread = float(data.spread)
-    log.info(data)
     if spread > 1.5 or check_spred:
         msg = (
             f"<b>{abs(data.difference):.2f}$</b>"
@@ -40,16 +39,21 @@ async def process_paraswap_data(message: Message, check_spred: bool):
             f"#LUNA SOL → BASE"
         )
 
-        log.info(msg)
+        log.info({"message": msg,
+                  "data": {
+                      "logs": data.logs,
+                      "amount": data.amount,
+                      "usdc": data.amount,
+                      "luna": data.luna,
+                      "difference":  data.difference,
+                      "spread": spread}})
         await message.answer(text=msg, parse_mode='HTML')
     print("____________________________________________________")
 
 
 async def process_jupiter_data(message: Message, check_spred: bool):
-    print("_______________________process_jupiter_data_____________________________")
     data = await Service().calc_jupiter_amount()
     spread = float(data.spread)
-    log.info(data)
     if spread > 1.5 or check_spred:
         msg = (
             f"<b>{abs(data.difference):.2f}$</b>"
@@ -58,7 +62,14 @@ async def process_jupiter_data(message: Message, check_spred: bool):
             "\n"
             f"#LUNA BASE → SOL"
         )
-        log.info(msg)
+        log.info({"message": msg,
+                  "data": {
+                      "logs": data.logs,
+                      "amount": data.amount,
+                      "usdc": data.amount,
+                      "luna": data.luna,
+                      "difference":  data.difference,
+                      "spread": spread}})
         await message.answer(text=msg, parse_mode='HTML')
     print("____________________________________________________")
 

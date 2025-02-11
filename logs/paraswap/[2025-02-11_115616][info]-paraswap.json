@@ -1,0 +1,9 @@
+{
+    "file": "paraswap.py",
+    "level": "INFO",
+    "time": "2025-02-11 11:56:16",
+    "name": "my_logger",
+    "message": {
+        "message": "https://api.paraswap.io/prices?srcToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&srcDecimals=6&destToken=0x55cD6469F597452B5A7536e2CD98fDE4c1247ee4&destDecimals=18&amount=500000000&network=8453&side=SELL"
+    }
+}

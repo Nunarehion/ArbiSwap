@@ -1,8 +1,6 @@
 import aiohttp
-import asyncio
 from typing import List, Dict, Any, Literal, Union
-from dataclasses import dataclass
-import logging as log
+from logger import logger as log
 
 
 class AsyncClient:
@@ -30,8 +28,10 @@ class AsyncClient:
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url, params=params) as response:
-                log.info(response.url)
-                return await response.json()
+                log.info(str(response.url))
+                data = await response.json()
+                data["url"] = str(response.url)
+                return data
 
     async def get_swap(self, *args, **kwargs):
         swap_data = (await self.get_swap_data(*args, **kwargs))['priceRoute']

@@ -8,17 +8,15 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from tgBot.handlers import common
 
 from config_reader import config
+from logger import logger as log
 
 
 async def main():
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
-    )
     bot = Bot(token=config.bot_token.get_secret_value())
     dp = Dispatcher(storage=MemoryStorage())
     dp["started_at"] = datetime.now().strftime("%Y-%m-%d %H:%M")
     dp.include_routers(common.router)
+    log.debug({"message": "start"})
     await dp.start_polling(bot)
 
 
