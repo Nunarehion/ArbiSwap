@@ -1,8 +1,8 @@
 {
     "file": "run.py",
     "level": "DEBUG",
-    "time": "2025-02-11 11:59:47",
-    "name": "my_logger",
+    "time": "2025-02-12 00:21:20",
+    "name": "LOGGER",
     "message": {
         "message": "start"
     }

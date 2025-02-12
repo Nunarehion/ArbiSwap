@@ -1,5 +1,7 @@
 import aiohttp
 from logger import logger as log
+from urllib.parse import urlparse, parse_qs
+import logging
 
 
 class AsyncClient:
@@ -11,14 +13,24 @@ class AsyncClient:
         params = {
             'inputMint': inputMint,
             'outputMint': outputMint,
-            'amount': amount
+            'amount': amount,
+            "slippageBps": 1,
+            "platformFeeBps": 20,
         }
+        # &slippageBps=50&restrictIntermediateTokens=true&platformFeeBps=20'
         async with aiohttp.ClientSession() as session:
             async with session.get(url, params=params) as response:
                 response.raise_for_status()
                 log.info(str(response.url))
                 data = await response.json()
-                data["url"] = str(response.url)
+                parsed_url = urlparse(str(response.url))
+                query_params = parse_qs(parsed_url.query)
+                data["info"] = {
+                    'url': str(response.url),
+                    'status': response.status,
+                    'headers': dict(response.headers),
+                    'query_params': query_params,
+                }
                 return data
 
     async def get_swap(self, *args, **kwargs):

@@ -111,10 +111,10 @@ class Service:
 
         usdc = paraswap_response["amount"]
         logs = {}
-        logs["message"] = "[GET AMOUNT FROM JUPITER]"
+        logs["message"] = "[JUPITER 500USDC -> JUPITER GET LUNA -> PARASWAP GET USDC ]"
         logs["GET AMOUNT FROM JUPITER"] = {}
-        logs["paraswap_response"] = paraswap_response
-        logs["jupiter_response"] = jupiter_response
+        logs["GET AMOUNT FROM JUPITER"]["paraswap_response"] = paraswap_response
+        logs["GET AMOUNT FROM JUPITER"]["jupiter_response"] = jupiter_response
         return ClientResult(
             logs=logs,
             coins=[self.output_mint, self.input_mint],
@@ -126,7 +126,6 @@ class Service:
         )
 
     async def calc_paraswap_amount(self):
-
         try:
             # Получаем данные о свопе из Paraswap
             paraswap_response = await self.fetch_paraswap_data(
@@ -150,10 +149,10 @@ class Service:
 
             usdc = float(jupiter_response["otherAmountThreshold"])
             logs = {}
-            logs["message"] = "[GET AMOUNT FROM PARASWAP]"
+            logs["message"] = "[PARASWAP 500USDC -> PARASWAP GET LUNA -> JUPITER GET USDC ]"
             logs["GET AMOUNT FROM PARASWAP"] = {}
-            logs["paraswap_response"] = paraswap_response
-            logs["jupiter_response"] = jupiter_response
+            logs["GET AMOUNT FROM PARASWAP"]["paraswap_response"] = paraswap_response
+            logs["GET AMOUNT FROM PARASWAP"]["jupiter_response"] = jupiter_response
 
             return ClientResult(
                 logs=logs,

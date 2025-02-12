@@ -21,9 +21,11 @@ def dataclass_to_dict(obj: Any) -> Dict[str, Any]:
 
 class JsonFileHandler(logging.FileHandler):
     def emit(self,  record):
-        directory_name = f'logs/{record.filename[:-3]}'
+        directory_name = f'logs/{(record.filename)[:-3]}'
         os.makedirs(directory_name, exist_ok=True)
-        log_filename = f"{directory_name}/[{self.formatTime(record)}][{record.levelname.lower()}]-{record.filename[:-3]}.json"
+        label_part = f"({record.label})" if hasattr(
+            record, 'label') and record.label else ""
+        log_filename = f"{directory_name}/[{self.formatTime(record)}][{record.levelname.lower()}]{label_part}-{record.filename[:-3]}.json"
         log_filename = log_filename.replace(":", "")
         log_filename = log_filename.replace(" ", "_")
         if isinstance(record.msg, dict):
@@ -42,7 +44,7 @@ class JsonFileHandler(logging.FileHandler):
             'name': record.name,
             'message': message
         }
-        pprint(log_record)
+        print(log_record)
 
         with open(log_filename, 'w') as f:
             json.dump(log_record, f, indent=4)
@@ -54,9 +56,21 @@ class JsonFileHandler(logging.FileHandler):
             return datetime.fromtimestamp(record.created).strftime('%Y-%m-%d %H:%M:%S')
 
 
+class CustomLogger(logging.Logger):
+    def info(self, msg, *args, label=None, **kwargs):
+        if label is not None:
+            extra = kwargs.get('extra', {})
+            extra['label'] = label
+            kwargs['extra'] = extra
+        super().info(msg, *args, **kwargs)
+
+
+# Настройка логгера
+logging.setLoggerClass(CustomLogger)
 # Настройка логирования
-logger = logging.getLogger('my_logger')
+logger = logging.getLogger("LOGGER")
 logger.setLevel(logging.DEBUG)
+
 json_file_handler = JsonFileHandler(__name__)
 json_file_handler.setLevel(logging.DEBUG)
 

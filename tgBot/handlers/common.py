@@ -46,7 +46,7 @@ async def process_paraswap_data(message: Message, check_spred: bool):
                       "usdc": data.amount,
                       "luna": data.luna,
                       "difference":  data.difference,
-                      "spread": spread}})
+                      "spread": spread}}, label="paraswap")
         await message.answer(text=msg, parse_mode='HTML')
     print("____________________________________________________")
 
@@ -69,7 +69,7 @@ async def process_jupiter_data(message: Message, check_spred: bool):
                       "usdc": data.amount,
                       "luna": data.luna,
                       "difference":  data.difference,
-                      "spread": spread}})
+                      "spread": spread}}, label="jupiter")
         await message.answer(text=msg, parse_mode='HTML')
     print("____________________________________________________")
 
