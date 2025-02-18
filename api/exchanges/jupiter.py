@@ -1,14 +1,19 @@
 import aiohttp
+
+from api.services.proxy import ProxyData
+from api.services.service import proxys
 from logger import logger as log
 from urllib.parse import urlparse, parse_qs
 import logging
 
 
 class AsyncClient:
-    def __init__(self, base_url: str = "https://quote-api.jup.ag/v6"):
+    proxy: ProxyData
+    def __init__(self, base_url: str = "https://quote-api.jup.ag/v6", proxy = None):
         # "https://ultra-api.jup.ag"
         # "https://quote-api.jup.ag/v6"
         self.base_url = base_url
+        self.proxy = proxy
 
     async def get_swap_data(self, inputMint: str, outputMint: str, amount: int):
         # "/quote"
@@ -22,7 +27,7 @@ class AsyncClient:
         }
         # &slippageBps=50&restrictIntermediateTokens=true&platformFeeBps=20'
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as response:
+            async with session.get(url, params=params, proxy=self.proxy.proxyUrl()) as response:
                 response.raise_for_status()
                 log.info(str(response.url))
                 data = await response.json()
