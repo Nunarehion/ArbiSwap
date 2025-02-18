@@ -3,6 +3,8 @@ from api.exchanges import jupiter, paraswap
 from dataclasses import dataclass
 from typing import Dict
 from logger import logger as log
+import time
+from datetime import datetime
 
 
 @dataclass
@@ -73,15 +75,41 @@ class Service:
         self.paraswapClient = paraswap.AsyncClient()
 
     async def fetch_jupiter_data(self, input_token, output_token, amount, **kwargs):
+        start_time = time.time()
         try:
-            return await self.jupiterClient.get_swap_data(input_token, output_token, amount, **kwargs)
+            data = await self.jupiterClient.get_swap_data(input_token, output_token, amount, **kwargs)
+            end_time = time.time()
+            start_time_readable = datetime.fromtimestamp(
+                start_time).strftime('%Y-%m-%d %H:%M:%S')
+            end_time_readable = datetime.fromtimestamp(
+                end_time).strftime('%Y-%m-%d %H:%M:%S')
+            result = {
+                "data": data,
+                "start_time": start_time_readable,
+                "end_time": end_time_readable,
+                "duration": end_time - start_time
+            }
+            return result
         except Exception as e:
             log.error(f"Error fetching data from Jupiter: {e}")
             return None
 
     async def fetch_paraswap_data(self, input_token, output_token, amount, **kwargs):
+        start_time = time.time()
         try:
-            return await self.paraswapClient.get_swap(input_token, output_token, amount, **kwargs)
+            data = await self.paraswapClient.get_swap(input_token, output_token, amount, **kwargs)
+            end_time = time.time()
+            start_time_readable = datetime.fromtimestamp(
+                start_time).strftime('%Y-%m-%d %H:%M:%S')
+            end_time_readable = datetime.fromtimestamp(
+                end_time).strftime('%Y-%m-%d %H:%M:%S')
+            result = {
+                "data": data,
+                "start_time": start_time_readable,
+                "end_time": end_time_readable,
+                "duration": end_time - start_time
+            }
+            return result
         except Exception as e:
             log.error(f"Error fetching data from Paraswap: {e}")
             return None
@@ -92,12 +120,12 @@ class Service:
         jupiter_response = await self.fetch_jupiter_data(
             self.input_mint.exchanges["jupiter"].token,
             self.output_mint.exchanges["jupiter"].token,
-            self.amount
+            self.amount * 10**6
         )
         if jupiter_response is None:
             return None
 
-        luna = float(jupiter_response["otherAmountThreshold"]) / 100
+        luna = float(jupiter_response["data"]["outAmount"]) / 10**8
 
         # Получаем данные о свопе из Paraswap
         paraswap_response = await self.fetch_paraswap_data(
@@ -109,7 +137,7 @@ class Service:
         if paraswap_response is None:
             return None
 
-        usdc = paraswap_response["amount"]
+        usdc = paraswap_response["data"]["amount"]
         logs = {}
         logs["message"] = "[JUPITER 500USDC -> JUPITER GET LUNA -> PARASWAP GET USDC ]"
         logs["GET AMOUNT FROM JUPITER"] = {}
@@ -121,7 +149,7 @@ class Service:
             amount=500,
             usdc=usdc,
             luna=luna,
-            difference=self.amount - usdc,
+            difference=usdc - self.amount,
             spread=self.calc_spread(self.amount, usdc)
         )
 
@@ -136,18 +164,19 @@ class Service:
             if paraswap_response is None:
                 return None
 
-            luna = paraswap_response["amount"]
+            luna = paraswap_response["data"]["amount"]
 
             # Получаем данные о свопе из Jupiter
             jupiter_response = await self.fetch_jupiter_data(
                 self.output_mint.exchanges["jupiter"].token,
                 self.input_mint.exchanges["jupiter"].token,
-                int(luna) * 100
+                int(luna) * 10**8
             )
             if jupiter_response is None:
                 return None
 
-            usdc = float(jupiter_response["otherAmountThreshold"])
+            usdc = float(jupiter_response["data"]
+                         ["outAmount"]) / 10**6
             logs = {}
             logs["message"] = "[PARASWAP 500USDC -> PARASWAP GET LUNA -> JUPITER GET USDC ]"
             logs["GET AMOUNT FROM PARASWAP"] = {}
@@ -160,7 +189,7 @@ class Service:
                 amount=500,
                 usdc=usdc,
                 luna=luna,
-                difference=self.amount - usdc,
+                difference=usdc - self.amount,
                 spread=self.calc_spread(self.amount, usdc)
             )
         except Exception as e:
@@ -171,4 +200,4 @@ class Service:
         return price_bye - price_sell
 
     def calc_spread(self, price_bye: float, price_sell: float):
-        return abs(price_bye - price_sell) / price_bye * 100
+        return 100 - price_bye / price_sell * 100

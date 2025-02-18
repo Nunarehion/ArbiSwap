@@ -1,0 +1,14 @@
+{
+    "data": {
+        "message": "[GET AMOUNT FROM JUPITER]"
+    },
+    "detail": {
+        "more": {
+            "file": "service.py",
+            "level": "DEBUG",
+            "time": "2025-02-18 09:07:57",
+            "name": "logger",
+            "label": null
+        }
+    }
+}

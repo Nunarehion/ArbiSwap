@@ -6,16 +6,19 @@ import logging
 
 class AsyncClient:
     def __init__(self, base_url: str = "https://quote-api.jup.ag/v6"):
+        # "https://ultra-api.jup.ag"
+        # "https://quote-api.jup.ag/v6"
         self.base_url = base_url
 
     async def get_swap_data(self, inputMint: str, outputMint: str, amount: int):
+        # "/quote"
+        # /order
         url = f"{self.base_url}/quote"
         params = {
             'inputMint': inputMint,
             'outputMint': outputMint,
             'amount': amount,
-            "slippageBps": 1,
-            "platformFeeBps": 20,
+            "platformFeeBps": 10,
         }
         # &slippageBps=50&restrictIntermediateTokens=true&platformFeeBps=20'
         async with aiohttp.ClientSession() as session:

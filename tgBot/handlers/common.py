@@ -32,21 +32,27 @@ async def process_paraswap_data(message: Message, check_spred: bool):
     spread = float(data.spread)
     if spread > 1.5 or check_spred:
         msg = (
-            f"<b>{abs(data.difference):.2f}$</b>"
+            f"<b>{data.difference:.2f}$</b>"
             f" (<i>{spread:.2f}%</i>)"
             f" <b>{data.amount}</b>$"
             "\n"
-            f"#LUNA SOL → BASE"
+            f"#LUNA BASE → SOL"
         )
+        log.info(
+            {
+                "short": {
+                    "amount": data.amount,
+                    "usdc": data.usdc,
+                    "luna": data.luna,
+                    "difference":  data.difference,
+                    "spread": spread
+                },
+                "logs": data.logs,
+                "telegram": {
+                    "objMessage": repr(message),
+                    "message": msg}
 
-        log.info({"message": msg,
-                  "data": {
-                      "logs": data.logs,
-                      "amount": data.amount,
-                      "usdc": data.amount,
-                      "luna": data.luna,
-                      "difference":  data.difference,
-                      "spread": spread}}, label="paraswap")
+            }, extra={'label': 'par'})
         await message.answer(text=msg, parse_mode='HTML')
     print("____________________________________________________")
 
@@ -56,35 +62,46 @@ async def process_jupiter_data(message: Message, check_spred: bool):
     spread = float(data.spread)
     if spread > 1.5 or check_spred:
         msg = (
-            f"<b>{abs(data.difference):.2f}$</b>"
+            f"<b>{data.difference:.2f}$</b>"
             f" (<i>{spread:.2f}%</i>)"
             f" <b>{data.amount}</b>$"
             "\n"
-            f"#LUNA BASE → SOL"
+            f"#LUNA SOL → BASE"
         )
-        log.info({"message": msg,
-                  "data": {
-                      "logs": data.logs,
-                      "amount": data.amount,
-                      "usdc": data.amount,
-                      "luna": data.luna,
-                      "difference":  data.difference,
-                      "spread": spread}}, label="jupiter")
+        log.info(
+            {
+                "short": {
+                    "amount": data.amount,
+                    "usdc": data.usdc,
+                    "luna": data.luna,
+                    "difference":  data.difference,
+                    "spread": spread
+                },
+                "logs": data.logs,
+                "telegram": {
+                    "objMessage": repr(message.from_user),
+                    "message": msg}
+
+            }, extra={'label': 'jup'})
         await message.answer(text=msg, parse_mode='HTML')
     print("____________________________________________________")
 
 
 async def get_data(message: Message, check_spred: bool = False):
-    await asyncio.gather(
-        process_paraswap_data(message, check_spred),
-        process_jupiter_data(message, check_spred)
-    )
+    try:
+        await asyncio.gather(
+            process_paraswap_data(message, check_spred),
+            process_jupiter_data(message, check_spred)
+        )
+    except Exception as e:
+        log.error({"error": repr(e), "info": {"telegram": repr(message.from_user)}},
+                  exc_info=True)
 
 
 async def send_updates(message: Message):
     while True:
         await get_data(message)
-        await asyncio.sleep(5)
+        await asyncio.sleep(15)
 
 
 @router.message(Command(commands=["push"]))

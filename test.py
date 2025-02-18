@@ -93,11 +93,16 @@ async def run_jupiter_tests():
             'outputMint': tokens['luna (jupiter)'],
             "amount": 500,
         },
-        '(jupiter) usdc => goat': {
+        '(jupiter) luna => usdc': {
             'inputMint': tokens['usdc (jupiter)'],
-            'outputMint': tokens['goat (jupiter)'],
-            "amount": 500,
+            'outputMint': tokens['luna (jupiter)'],
+            "amount": 26732,
         },
+        # '(jupiter) usdc => goat': {
+        #     'inputMint': tokens['usdc (jupiter)'],
+        #     'outputMint': tokens['goat (jupiter)'],
+        #     "amount": 500,
+        # },
     }
 
     for key in testes:

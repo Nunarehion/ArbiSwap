@@ -1,8 +1,7 @@
 import aiohttp
 from urllib.parse import urlparse, parse_qs
-from typing import List, Dict, Any, Literal, Union
+from typing import Literal, Union
 from logger import logger as log
-import logging
 
 
 class AsyncClient:
@@ -43,9 +42,10 @@ class AsyncClient:
                 return data
 
     async def get_swap(self, *args, **kwargs):
-        swap_data = (await self.get_swap_data(*args, **kwargs))['priceRoute']
+        data = (await self.get_swap_data(*args, **kwargs))
+        swap_data = data['priceRoute']
         dest_usd = float(swap_data['destUSD'])
         dest_decimals = swap_data['destDecimals']
         amount = float(swap_data['destAmount']) / 10**dest_decimals
 
-        return {"amount": amount, "destUSD": dest_usd, **swap_data}
+        return {"amount": amount, "destUSD": dest_usd, **data}

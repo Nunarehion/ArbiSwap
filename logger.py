@@ -1,50 +1,41 @@
 import logging
 import json
-from datetime import datetime
 import os
-
+from datetime import datetime
 from dataclasses import asdict, is_dataclass
-from typing import Any, Dict
-from pprint import pprint
-
-
-def dataclass_to_dict(obj: Any) -> Dict[str, Any]:
-    if is_dataclass(obj):
-        return {k: dataclass_to_dict(v) for k, v in asdict(obj).items()}
-    elif isinstance(obj, list):
-        return [dataclass_to_dict(item) for item in obj]
-    elif isinstance(obj, dict):
-        return {k: dataclass_to_dict(v) for k, v in obj.items()}
-    else:
-        return obj
 
 
 class JsonFileHandler(logging.FileHandler):
-    def emit(self,  record):
+    def emit(self, record):
         directory_name = f'logs/{(record.filename)[:-3]}'
         os.makedirs(directory_name, exist_ok=True)
         label_part = f"({record.label})" if hasattr(
             record, 'label') and record.label else ""
-        log_filename = f"{directory_name}/[{self.formatTime(record)}][{record.levelname.lower()}]{label_part}-{record.filename[:-3]}.json"
-        log_filename = log_filename.replace(":", "")
-        log_filename = log_filename.replace(" ", "_")
+        log_filename = f"{directory_name}/[{self.formatTime(record)}][{record.levelname.lower()}]{label_part}-{record.filename[:-3]}{record.label if hasattr(record, 'label') else ''}.json"
+        log_filename = log_filename.replace(":", "").replace(" ", "_")
+        detail = {
+            "more": {
+                "file": record.filename,
+                'level': record.levelname,
+                'time': self.formatTime(record),
+                'name': record.name,
+                'label': record.label if hasattr(record, 'label') else None
+            }
+        }
+
         if isinstance(record.msg, dict):
             message = record.msg
-        elif is_dataclass(record.msg):
-            message = dataclass_to_dict({**record.msg})
+            detail.update(message.get("detail", {}))
+
         elif isinstance(record.msg, str):
             message = {'message': record.msg}
         else:
             message = {'message': repr(record.msg)}
 
         log_record = {
-            "file": record.filename,
-            'level': record.levelname,
-            'time': self.formatTime(record),
-            'name': record.name,
-            'message': message
+            'data': message,
+            'detail': detail
         }
-        print(log_record)
 
         with open(log_filename, 'w') as f:
             json.dump(log_record, f, indent=4)
@@ -56,20 +47,9 @@ class JsonFileHandler(logging.FileHandler):
             return datetime.fromtimestamp(record.created).strftime('%Y-%m-%d %H:%M:%S')
 
 
-class CustomLogger(logging.Logger):
-    def info(self, msg, *args, label=None, **kwargs):
-        if label is not None:
-            extra = kwargs.get('extra', {})
-            extra['label'] = label
-            kwargs['extra'] = extra
-        super().info(msg, *args, **kwargs)
-
-
 # Настройка логгера
-logging.setLoggerClass(CustomLogger)
-# Настройка логирования
-logger = logging.getLogger("LOGGER")
-logger.setLevel(logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 json_file_handler = JsonFileHandler(__name__)
 json_file_handler.setLevel(logging.DEBUG)
@@ -78,12 +58,13 @@ json_file_handler.setLevel(logging.DEBUG)
 logger.addHandler(json_file_handler)
 
 if __name__ == "__main__":
-    logger.debug({'event': 'user_login', 'user_id': 123, 'status': 'success'})
-    logger.info({'event': 'data_update', 'data_id': 456,
-                'changes': {'field': 'value'}})
-    logger.warning({'event': 'user_login', 'user_id': 789,
-                    'status': 'failed', 'reason': 'invalid_password'})
-    logger.error({'event': 'data_delete', 'data_id': 101,
-                  'status': 'error', 'message': 'not_found'})
+    logger.debug({'event': 'user_login', 'user_id': 123,
+                 'status': 'success'}, extra={'label': 'user_action'})
+    logger.info({'event': 'data_update', 'data_id': 456, 'changes': {
+                'field': 'value'}}, extra={'label': 'data_action'})
+    logger.warning({'event': 'user_login', 'user_id': 789, 'status': 'failed',
+                   'reason': 'invalid_password'}, extra={'label': 'user_action'})
+    logger.error({'event': 'data_delete', 'data_id': 101, 'status': 'error',
+                 'message': 'not_found'}, extra={'label': 'data_action'})
     logger.critical({'event': 'system_failure', 'error_code': 500,
-                    'message': 'internal_server_error'})
+                    'message': 'internal_server_error'}, extra={'label': 'system_error'})

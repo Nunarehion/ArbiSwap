@@ -1,9 +1,0 @@
-{
-    "file": "service.py",
-    "level": "DEBUG",
-    "time": "2025-02-12 00:21:21",
-    "name": "LOGGER",
-    "message": {
-        "message": "[GET AMOUNT FROM JUPITER]"
-    }
-}

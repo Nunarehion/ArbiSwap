@@ -1,0 +1,17 @@
+{
+  "data": {
+    "error": "AttributeError(\"'NoneType' object has no attribute 'spread'\")",
+    "info": {
+      "telegram": "User(id=6092815257, is_bot=False, first_name='(; \u2022_\u2022 )', last_name=None, username='smailjk', language_code='ru', is_premium=None, added_to_attachment_menu=None, can_join_groups=None, can_read_all_group_messages=None, supports_inline_queries=None, can_connect_to_business=None, has_main_web_app=None)"
+    }
+  },
+  "detail": {
+    "more": {
+      "file": "common.py",
+      "level": "ERROR",
+      "time": "2025-02-18 09:07:58",
+      "name": "logger",
+      "label": null
+    }
+  }
+}

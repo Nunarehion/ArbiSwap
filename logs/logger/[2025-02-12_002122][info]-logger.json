@@ -1,9 +1,0 @@
-{
-    "file": "logger.py",
-    "level": "INFO",
-    "time": "2025-02-12 00:21:22",
-    "name": "LOGGER",
-    "message": {
-        "message": "https://quote-api.jup.ag/v6/quote?inputMint=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&outputMint=9se6kma7LeGcQWyRBNcYzyxZPE3r9t9qWZ8SnjnN3jJ7&amount=500&slippageBps=1&platformFeeBps=20"
-    }
-}
