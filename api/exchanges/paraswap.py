@@ -1,11 +1,15 @@
 import aiohttp
 from urllib.parse import urlparse, parse_qs
 from typing import Literal, Union
+
+from api.services.proxy import ProxyData
 from logger import logger as log
 
 
 class AsyncClient:
-    def __init__(self, base_url: str = 'https://api.paraswap.io/'):
+    proxy: ProxyData
+    def __init__(self, base_url: str = 'https://api.paraswap.io/', proxy = None):
+        self.proxy = proxy
         self.base_url = base_url
 
     async def all_tokens(self, network: Union[int, str] = 1):
@@ -28,7 +32,7 @@ class AsyncClient:
         }
 
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as response:
+            async with session.get(url, params=params, proxy=self.proxy.proxyUrl()) as response:
                 log.info(str(response.url))
                 data = await response.json()
                 parsed_url = urlparse(str(response.url))

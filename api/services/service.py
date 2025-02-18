@@ -2,6 +2,8 @@ import logging as log
 from api.exchanges import jupiter, paraswap
 from dataclasses import dataclass
 from typing import Dict
+
+from api.services.proxy import ProxyData
 from logger import logger as log
 import time
 from datetime import datetime
@@ -50,6 +52,9 @@ class ClientResult:
     difference: float
     spread: float
 
+proxys = [
+    ProxyData('127.0.0.1', '80', password=None, login=None, protocol='http'),
+]
 
 class Service:
     def __init__(self,
