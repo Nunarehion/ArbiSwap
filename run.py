@@ -218,8 +218,8 @@ async def main():
     dp.include_routers(common.router)
     log.debug({"message": "start"})
 
-    rps = 1000/4
-    asyncio.create_task(worker(bot, rps))
+    rpm = 60/4
+    asyncio.create_task(worker(bot, rpm))
     await dp.start_polling(bot)
 
 
