@@ -2,7 +2,6 @@ import logging
 import json
 import os
 from datetime import datetime
-from dataclasses import asdict, is_dataclass
 
 
 class JsonFileHandler(logging.FileHandler):
