@@ -2,12 +2,16 @@
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.types import Message
-import asyncio
 from logger import logger as log
 
-from api.services.service import Service
+from aiogram import types
+from aiogram.fsm.context import FSMContext
+
+from run import add_user, remove_user, get_users, get_paraswap_message, get_jupiter_message
+
+
 router = Router()
-update_tasks = {}
+# message.from_user.id
 
 
 @router.message(Command(commands=["start"]))
@@ -23,103 +27,33 @@ async def cmd_get(message: Message):
 
 @router.message(Command(commands=["get"]))
 async def cmd_start(message: Message):
-    await get_data(message, True)
+    paraswap_message = get_paraswap_message()
+    jupiter_message = get_jupiter_message()
 
+    if paraswap_message:
+        await message.answer(paraswap_message, parse_mode='HTML')
+    if jupiter_message:
+        await message.answer(jupiter_message, parse_mode='HTML')
 
-async def process_paraswap_data(message: Message, check_spred: bool):
-    print("________________________process_paraswap_data____________________________")
-    data = await Service().calc_paraswap_amount()
-    spread = float(data.spread)
-    if spread > 1.5 or check_spred:
-        msg = (
-            f"<b>{data.difference:.2f}$</b>"
-            f" (<i>{spread:.2f}%</i>)"
-            f" <b>{data.amount}</b>$"
-            "\n"
-            f"#LUNA BASE → SOL"
-        )
-        log.info(
-            {
-                "short": {
-                    "amount": data.amount,
-                    "usdc": data.usdc,
-                    "luna": data.luna,
-                    "difference":  data.difference,
-                    "spread": spread
-                },
-                "logs": data.logs,
-                "telegram": {
-                    "objMessage": repr(message),
-                    "message": msg}
-
-            }, extra={'label': 'par'})
-        await message.answer(text=msg, parse_mode='HTML')
-    print("____________________________________________________")
-
-
-async def process_jupiter_data(message: Message, check_spred: bool):
-    data = await Service().calc_jupiter_amount()
-    spread = float(data.spread)
-    if spread > 1.5 or check_spred:
-        msg = (
-            f"<b>{data.difference:.2f}$</b>"
-            f" (<i>{spread:.2f}%</i>)"
-            f" <b>{data.amount}</b>$"
-            "\n"
-            f"#LUNA SOL → BASE"
-        )
-        log.info(
-            {
-                "short": {
-                    "amount": data.amount,
-                    "usdc": data.usdc,
-                    "luna": data.luna,
-                    "difference":  data.difference,
-                    "spread": spread
-                },
-                "logs": data.logs,
-                "telegram": {
-                    "objMessage": repr(message.from_user),
-                    "message": msg}
-
-            }, extra={'label': 'jup'})
-        await message.answer(text=msg, parse_mode='HTML')
-    print("____________________________________________________")
-
-
-async def get_data(message: Message, check_spred: bool = False):
-    try:
-        await asyncio.gather(
-            process_paraswap_data(message, check_spred),
-            process_jupiter_data(message, check_spred)
-        )
-    except Exception as e:
-        log.error({"error": repr(e), "info": {"telegram": repr(message.from_user)}},
-                  exc_info=True)
-
-
-async def send_updates(message: Message):
-    while True:
-        await get_data(message)
-        await asyncio.sleep(15)
+    if not paraswap_message and not jupiter_message:
+        await message.answer("Нет кешированных сообщений.", parse_mode='HTML')
 
 
 @router.message(Command(commands=["push"]))
-async def cmd_push(message: Message):
+async def cmd_push(message: types.Message):
     user_id = message.from_user.id
-    if user_id not in update_tasks:
-        update_tasks[user_id] = asyncio.create_task(send_updates(message))
+    if user_id not in get_users():
+        add_user(user_id)
         await message.answer("Обновления запущены. Используйте команду /stop для остановки.")
     else:
         await message.answer("Обновления уже запущены.")
 
 
 @router.message(Command(commands=["stop"]))
-async def cmd_stop(message: Message):
+async def cmd_stop(message: types.Message):
     user_id = message.from_user.id
-    if user_id in update_tasks:
-        update_tasks[user_id].cancel()
-        del update_tasks[user_id]
+    if user_id in get_users():
+        remove_user(user_id)
         await message.answer("Обновления остановлены.")
     else:
         await message.answer("Обновления не запущены.")
