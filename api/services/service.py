@@ -28,20 +28,6 @@ class Coin:
 
 @dataclass
 class ClientResult:
-    coins: list[Coin]
-    amount: float
-    jupiter_LUNA: float
-    paraswap_USDC: float
-    paraswap_LUNA: float
-    paraswap_difference: float
-    jupiter_USDC: float
-    jupiter_difference: float
-    spread_jupiter: float
-    spread_paraswap: float
-
-
-@dataclass
-class ClientResult:
     logs: dict
     coins: list[Coin]
     amount: float
